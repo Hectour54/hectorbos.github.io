@@ -213,6 +213,10 @@
     border-color: var(--cyan);
   }
 
+
+
+
+
   /* Terminal block hero */
   .hero-terminal {
     position: absolute;
@@ -226,6 +230,7 @@
     display: none;
   }
   @media (min-width: 1100px) { .hero-terminal { display: block; } }
+
 
   .terminal-bar {
     background: var(--bg-card);
@@ -257,14 +262,18 @@
   .terminal-body .cmd { color: var(--text-primary); }
   .terminal-body .out { color: #4ade80; }
   .terminal-body .warn { color: #fbbf24; }
+  .terminal-body div {
+    opacity: 0;
+    }
   .cursor {
     display: inline-block;
-    width: 8px; height: 14px;
+    width: 8px;
+    height: 16px;
     background: var(--cyan);
     animation: blink 1s step-end infinite;
-    vertical-align: middle;
     margin-left: 2px;
-  }
+    vertical-align: middle;
+    }
   @keyframes blink { 50% { opacity: 0; } }
 
   /* SECTION LAYOUT */
@@ -727,7 +736,7 @@
       <div class="out">PORT   STATE SERVICE VERSION</div>
       <div class="out">22/tcp open  ssh     OpenSSH 8.9</div>
       <div class="out">80/tcp open  http    nginx 1.24</div>
-      <div style="margin-top:0.5rem"><span class="prompt">hector@kali:~$</span> <span class="cursor"></span></div>
+      <div style="margin-top:0.5rem"><span class="prompt">hector@kali:~$</span> <div id="cursor" class="cursor"></div></div>
     </div>
   </div>
 </section>
@@ -1001,4 +1010,52 @@
 </footer>
 
 </body>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const lines = document.querySelectorAll(".terminal-body div");
+  const cursor = document.getElementById("cursor");
+
+  let lineIndex = 0;
+
+  function moveCursorTo(element) {
+    element.appendChild(cursor);
+  }
+
+  function typeLine(element, text, i = 0) {
+    if (i === 0) {
+      element.textContent = "";
+      element.style.opacity = 1;
+      moveCursorTo(element);
+    }
+
+    if (i < text.length) {
+      element.textContent += text.charAt(i);
+      moveCursorTo(element);
+      setTimeout(() => typeLine(element, text, i + 1), 20);
+    } else {
+      lineIndex++;
+      setTimeout(run, 300);
+    }
+  }
+
+  function run() {
+    if (lineIndex < lines.length) {
+      const el = lines[lineIndex];
+      const text = el.dataset.text || el.textContent;
+      typeLine(el, text);
+    } else {
+      cursor.remove(); // fin du terminal
+    }
+  }
+
+  lines.forEach(el => {
+    el.dataset.text = el.textContent;
+    el.textContent = "";
+  });
+
+  run();
+});
+</script>
+
 </html>
